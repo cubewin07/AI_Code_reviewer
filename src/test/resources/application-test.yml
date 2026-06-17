@@ -1,3 +1,18 @@
 spring:
   datasource:
     url: jdbc:sqlite:data/reviewer-test.db
+
+app:
+  github:
+    app-id: 123456
+    private-key-path: mock-key.pem
+    webhook-secret: test-webhook-secret
+  nine-router:
+    base-url: https://api.9router.com
+    api-key: mock-api-key
+    model: meta-llama/llama-3-70b-instruct
+    max-tokens: 4096
+    timeout-seconds: 60
+  worker:
+    concurrency: 2
+    max-attempts: 3
