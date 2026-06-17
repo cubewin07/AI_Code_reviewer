@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: ai-code-reviewer
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:sqlite:data/reviewer.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1 # SQLite only supports 1 writer at a time to prevent locks
+
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+app:
+  github:
+    app-id: ${GITHUB_APP_ID}
+    private-key-path: ${GITHUB_PRIVATE_KEY_PATH}
+    webhook-secret: ${GITHUB_WEBHOOK_SECRET}
+  nine-router:
+    base-url: ${NINE_ROUTER_BASE_URL:https://api.9router.com}
+    api-key: ${NINE_ROUTER_API_KEY}
+    model: ${NINE_ROUTER_MODEL:meta-llama/llama-3-70b-instruct}
+    max-tokens: ${NINE_ROUTER_MAX_TOKENS:4096}
+    timeout-seconds: ${NINE_ROUTER_TIMEOUT_SECONDS:60}
+  worker:
+    concurrency: ${WORKER_CONCURRENCY:2}
+    max-attempts: ${WORKER_MAX_ATTEMPTS:3}

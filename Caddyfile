@@ -1,0 +1,3 @@
+review.yourdomain.com {
+    reverse_proxy localhost:8080
+}

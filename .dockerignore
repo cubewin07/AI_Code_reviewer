@@ -1,0 +1,10 @@
+.gradle
+build
+!gradle/wrapper/gradle-wrapper.jar
+.git
+.gitignore
+.env
+*.md
+.idea
+.vscode
+.DS_Store
