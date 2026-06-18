@@ -16,7 +16,8 @@ public final class NineRouterDto {
             String model,
             List<ChatMessage> messages,
             @JsonProperty("max_tokens") int maxTokens,
-            Double temperature
+            Double temperature,
+            Boolean stream
     ) {}
 
     public record Choice(

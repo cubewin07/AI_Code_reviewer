@@ -92,7 +92,8 @@ public class NineRouterClient {
                 model,
                 messages,
                 appConfig.nineRouter().maxTokens(),
-                null // Use default temperature
+                null, // Use default temperature
+                false // Disable streaming
         );
 
         log.info("Sending chat completion request to 9Router. Model: {}, Messages count: {}", model, messages.size());
