@@ -7,6 +7,7 @@ app:
     app-id: 123456
     private-key-path: mock-key.pem
     webhook-secret: test-webhook-secret
+    api-url: http://localhost:8089
   nine-router:
     base-url: https://api.9router.com
     api-key: mock-api-key

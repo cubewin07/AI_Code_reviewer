@@ -40,11 +40,16 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("net.logstash.logback:logstash-logback-encoder:8.1")
 
+    // JWT & Bouncy Castle for GitHub App Auth
+    implementation("com.auth0:java-jwt:4.4.0")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
+
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation("org.wiremock:wiremock-standalone:3.9.1")
 }
 
 tasks.withType<Test> {

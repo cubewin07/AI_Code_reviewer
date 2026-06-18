@@ -43,6 +43,7 @@ app:
     app-id: ${GITHUB_APP_ID}
     private-key-path: ${GITHUB_PRIVATE_KEY_PATH}
     webhook-secret: ${GITHUB_WEBHOOK_SECRET}
+    api-url: ${GITHUB_API_URL:https://api.github.com}
   nine-router:
     base-url: ${NINE_ROUTER_BASE_URL:https://api.9router.com}
     api-key: ${NINE_ROUTER_API_KEY}

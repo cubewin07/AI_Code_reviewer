@@ -11,7 +11,8 @@ public record AppConfig(
     public record Github(
         String appId,
         String privateKeyPath,
-        String webhookSecret
+        String webhookSecret,
+        String apiUrl
     ) {}
 
     public record NineRouter(
