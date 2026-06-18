@@ -54,3 +54,6 @@ app:
   worker:
     concurrency: ${WORKER_CONCURRENCY:2}
     max-attempts: ${WORKER_MAX_ATTEMPTS:3}
+  agent:
+    max-iterations: ${AGENT_MAX_ITERATIONS:5}
+    max-context-tokens: ${AGENT_MAX_CONTEXT_TOKENS:16384}

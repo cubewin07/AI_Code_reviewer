@@ -6,7 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record AppConfig(
     Github github,
     NineRouter nineRouter,
-    Worker worker
+    Worker worker,
+    Agent agent
 ) {
     public record Github(
         String appId,
@@ -27,5 +28,10 @@ public record AppConfig(
     public record Worker(
         int concurrency,
         int maxAttempts
+    ) {}
+
+    public record Agent(
+        int maxIterations,
+        int maxContextTokens
     ) {}
 }
