@@ -19,6 +19,7 @@ public record AppConfig(
         String baseUrl,
         String apiKey,
         String model,
+        String fallbackModel,
         int maxTokens,
         int timeoutSeconds
     ) {}

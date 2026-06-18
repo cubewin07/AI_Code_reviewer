@@ -12,6 +12,7 @@ app:
     base-url: https://api.9router.com
     api-key: mock-api-key
     model: meta-llama/llama-3-70b-instruct
+    fallback-model: meta-llama/llama-3-8b-instruct
     max-tokens: 4096
     timeout-seconds: 60
   worker:
