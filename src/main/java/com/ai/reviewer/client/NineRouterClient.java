@@ -10,6 +10,8 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClientException;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 import java.util.List;
 
@@ -19,9 +21,11 @@ public class NineRouterClient {
 
     private final AppConfig appConfig;
     private final RestClient restClient;
+    private final MeterRegistry meterRegistry;
 
-    public NineRouterClient(AppConfig appConfig) {
+    public NineRouterClient(AppConfig appConfig, MeterRegistry meterRegistry) {
         this.appConfig = appConfig;
+        this.meterRegistry = meterRegistry;
         
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         int timeoutMillis = (int) Duration.ofSeconds(appConfig.nineRouter().timeoutSeconds()).toMillis();
@@ -122,6 +126,10 @@ public class NineRouterClient {
         } finally {
             long duration = System.currentTimeMillis() - startTime;
             log.info("9Router request for model {} completed in {}ms", model, duration);
+            Timer.builder("llm.latency")
+                    .tag("model", model)
+                    .register(meterRegistry)
+                    .record(Duration.ofMillis(duration));
         }
 
         if (response == null || response.choices() == null || response.choices().isEmpty()) {

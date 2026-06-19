@@ -26,15 +26,68 @@ See [`docs/IMPLEMENTATION_PLAN.md`](docs/IMPLEMENTATION_PLAN.md) for the full ph
 
 ---
 
-## Setup (Quick Reference)
+## Setup & Deployment Guide
 
-> Full guide coming in Phrase 7.
+### 1. GitHub App Configuration
+1. Go to your GitHub profile or organization settings -> **Developer settings** -> **GitHub Apps** -> **New GitHub App**.
+2. Set the following fields:
+   - **GitHub App name**: `Your App Name`
+   - **Homepage URL**: `https://yourdomain.com`
+   - **Webhook**: Check **Active**
+   - **Webhook URL**: `https://yourdomain.com/webhook`
+   - **Webhook secret**: A secure random string (save this for `.env`)
+3. Under **Permissions & events**, set:
+   - **Repository permissions**:
+     - `Contents`: **Read-only** (to read code files and diffs)
+     - `Metadata`: **Read-only** (default, for repository information)
+     - `Pull requests`: **Read & write** (to post reviews as PR comments)
+     - `Commit statuses`: **Read & write** (optional, if you want status checks)
+   - **Subscribe to events**:
+     - `Push`
+     - `Pull request`
+4. Save the app, then click **Generate a private key** at the bottom. Download the `.pem` private key file.
 
-1. **Create a GitHub App** — set webhook URL to `https://review.yourdomain.com/webhook`; subscribe to `push` and `pull_request` events.
-2. **Copy `.env.example` → `.env`** and fill in secrets (App ID, PEM key path, Webhook secret, 9Router credentials).
-3. **Build**: `mvn package -DskipTests`
-4. **Run**: `java -jar target/ai-code-reviewer.jar`
-5. **Deploy**: use the provided `systemd` unit and `Caddyfile`.
+### 2. Local Environment Setup
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+2. Open `.env` and configure the following variables:
+   - `GITHUB_APP_ID`: Your App ID from the GitHub App General page.
+   - `GITHUB_PRIVATE_KEY_PATH`: Absolute path to the downloaded `.pem` key.
+   - `GITHUB_WEBHOOK_SECRET`: The webhook secret you entered.
+   - `NINE_ROUTER_BASE_URL`: Base URL for the 9Router gateway.
+   - `NINE_ROUTER_API_KEY`: Your 9Router API token.
+
+### 3. Build
+Build the executable Spring Boot JAR using Gradle:
+```bash
+./gradlew bootJar
+```
+This produces the JAR file at `build/libs/ai-code-reviewer-0.0.1-SNAPSHOT.jar`.
+
+### 4. systemd Deployment
+1. Create directory `/opt/ai-code-reviewer` and copy the built JAR there:
+   ```bash
+   sudo mkdir -p /opt/ai-code-reviewer
+   sudo cp build/libs/ai-code-reviewer-0.0.1-SNAPSHOT.jar /opt/ai-code-reviewer/ai-code-reviewer.jar
+   sudo cp .env /opt/ai-code-reviewer/.env
+   ```
+2. Copy `ai-code-reviewer.service` to systemd:
+   ```bash
+   sudo cp ai-code-reviewer.service /etc/systemd/system/
+   ```
+3. Enable and start the service:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now ai-code-reviewer
+   ```
+
+### 5. Reverse Proxy (Caddy)
+Copy the configuration from the provided `Caddyfile` into `/etc/caddy/Caddyfile` and reload Caddy:
+```bash
+sudo systemctl reload caddy
+```
 
 ---
 

@@ -7,6 +7,7 @@ import com.ai.reviewer.service.WebhookSignatureValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.MDC;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ public class WebhookController {
     private final WebhookSignatureValidator signatureValidator;
     private final JobRepository jobRepository;
     private final ObjectMapper objectMapper;
+    private final MeterRegistry meterRegistry;
 
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(
@@ -95,6 +97,7 @@ public class WebhookController {
 
             try {
                 job = jobRepository.save(job);
+                meterRegistry.counter("jobs.enqueued").increment();
                 MDC.put("jobId", String.valueOf(job.getId()));
                 log.info("Successfully enqueued job. Job ID: {}, Event: {}, Repo: {}, Delivery ID: {}",
                         job.getId(), eventType, repoFullName, deliveryId);

@@ -17,9 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ai.reviewer.dto.github.GitHubComment;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PreDestroy;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +35,48 @@ public class JobProcessor {
     private final ObjectMapper objectMapper;
     private final AppConfig appConfig;
     private final GitHubClient gitHubClient;
+    private final MeterRegistry meterRegistry;
+
+    private final AtomicInteger activeJobs = new AtomicInteger(0);
+    private volatile boolean shuttingDown = false;
+
+    @PreDestroy
+    public void shutdown() {
+        shuttingDown = true;
+        log.info("Graceful shutdown initiated. Waiting for {} active jobs to complete...", activeJobs.get());
+        long start = System.currentTimeMillis();
+        long timeoutMs = 30000; // 30 seconds timeout
+        while (activeJobs.get() > 0 && (System.currentTimeMillis() - start) < timeoutMs) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn("Interrupted while waiting for active jobs to complete");
+                break;
+            }
+        }
+        if (activeJobs.get() > 0) {
+            log.warn("Graceful shutdown timeout reached. {} jobs still running.", activeJobs.get());
+        } else {
+            log.info("All active jobs completed. Graceful shutdown finished.");
+        }
+    }
 
     @Async("jobExecutor")
     @Transactional
     public void processJobAsync(Long jobId) {
+        if (shuttingDown) {
+            log.warn("Rejecting job {} because service is shutting down", jobId);
+            Optional<Job> jobOpt = jobRepository.findById(jobId);
+            if (jobOpt.isPresent()) {
+                Job job = jobOpt.get();
+                job.setStatus("PENDING");
+                job.setUpdatedAt(LocalDateTime.now());
+                jobRepository.save(job);
+            }
+            return;
+        }
+
         Optional<Job> jobOpt = jobRepository.findById(jobId);
         if (jobOpt.isEmpty()) {
             log.warn("Job not found: {}", jobId);
@@ -48,6 +89,7 @@ public class JobProcessor {
         MDC.put("eventType", job.getEventType());
 
         ReviewResult result = null;
+        activeJobs.incrementAndGet();
         try {
             log.info("Starting processing for job {}", jobId);
 
@@ -80,6 +122,7 @@ public class JobProcessor {
                 job.setError(null);
                 job.setUpdatedAt(LocalDateTime.now());
                 jobRepository.save(job);
+                meterRegistry.counter("jobs.completed").increment();
                 log.info("Successfully completed review and posted comment for job {}", jobId);
             } else {
                 String errorMsg = result.summary() != null ? result.summary() : "Review agent returned unsuccessful status";
@@ -90,6 +133,7 @@ public class JobProcessor {
             log.error("Exception occurred while processing job {}", jobId, t);
             handleFailure(job, t, result);
         } finally {
+            activeJobs.decrementAndGet();
             MDC.remove("jobId");
             MDC.remove("repo");
             MDC.remove("eventType");
@@ -175,5 +219,6 @@ public class JobProcessor {
 
         job.setUpdatedAt(LocalDateTime.now());
         jobRepository.save(job);
+        meterRegistry.counter("jobs.failed").increment();
     }
 }

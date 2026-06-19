@@ -1,0 +1,16 @@
+[Unit]
+Description=AI Code Reviewer Service
+After=network.target
+
+[Service]
+Type=simple
+User=reviewer
+WorkingDirectory=/opt/ai-code-reviewer
+EnvironmentFile=/opt/ai-code-reviewer/.env
+ExecStart=/usr/bin/java -jar /opt/ai-code-reviewer/ai-code-reviewer.jar
+Restart=always
+RestartSec=10
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

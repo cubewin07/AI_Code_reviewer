@@ -1,3 +1,14 @@
 review.yourdomain.com {
+    # HSTS headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+    }
+
+    # Optional rate-limiting on /webhook (requires caddy-ratelimit plugin)
+    # @webhook {
+    #     path /webhook
+    # }
+    # rate_limit @webhook {remote_host} 10r/s 15r/m
+
     reverse_proxy localhost:8080
 }
