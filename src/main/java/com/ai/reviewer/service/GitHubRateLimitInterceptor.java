@@ -8,13 +8,19 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import lombok.RequiredArgsConstructor;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class GitHubRateLimitInterceptor implements ClientHttpRequestInterceptor {
 
+    private final MeterRegistry meterRegistry;
     private static final int MAX_ATTEMPTS = 3;
 
     @Override
@@ -24,7 +30,20 @@ public class GitHubRateLimitInterceptor implements ClientHttpRequestInterceptor 
 
         while (true) {
             attempt++;
+            long startTime = System.currentTimeMillis();
             ClientHttpResponse response = execution.execute(request, body);
+            long duration = System.currentTimeMillis() - startTime;
+
+            String status = "unknown";
+            try {
+                status = String.valueOf(response.getStatusCode().value());
+            } catch (Exception ignored) {}
+
+            Timer.builder("github.api.latency")
+                    .tag("method", request.getMethod().name())
+                    .tag("status", status)
+                    .register(meterRegistry)
+                    .record(Duration.ofMillis(duration));
 
             // Check if status code is 429 (Too Many Requests) or 403 (Forbidden due to rate limit/abuse)
             if (response.getStatusCode().isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS) ||

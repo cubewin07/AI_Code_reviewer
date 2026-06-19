@@ -192,6 +192,38 @@ public class JobProcessor {
         }
     }
 
+    public boolean isShuttingDown() {
+        return shuttingDown;
+    }
+
+    @Transactional
+    public void handleStuckJob(Job job) {
+        int nextAttempts = job.getAttempts() + 1;
+        job.setAttempts(nextAttempts);
+        job.setError("Job execution timed out or JVM crashed");
+
+        int maxAttempts = appConfig.worker() != null ? appConfig.worker().maxAttempts() : 3;
+        if (maxAttempts <= 0) {
+            maxAttempts = 3;
+        }
+
+        if (nextAttempts >= maxAttempts) {
+            job.setStatus("DEAD_LETTER");
+            meterRegistry.counter("jobs.deadletter").increment();
+            log.warn("Stuck job {} reached max attempts ({}) and is marked as DEAD_LETTER.",
+                    job.getId(), maxAttempts);
+        } else {
+            job.setStatus("FAILED");
+            meterRegistry.counter("jobs.retry").increment();
+            log.info("Stuck job {} failed (attempt {}/{}). Will retry.",
+                    job.getId(), nextAttempts, maxAttempts);
+        }
+
+        job.setUpdatedAt(LocalDateTime.now());
+        jobRepository.save(job);
+        meterRegistry.counter("jobs.failed").increment();
+    }
+
     private void handleFailure(Job job, Throwable t, ReviewResult result) {
         int nextAttempts = job.getAttempts() + 1;
         job.setAttempts(nextAttempts);
@@ -204,10 +236,12 @@ public class JobProcessor {
 
         if (nextAttempts >= maxAttempts) {
             job.setStatus("DEAD_LETTER");
+            meterRegistry.counter("jobs.deadletter").increment();
             log.warn("Job {} reached max attempts ({}) and is marked as DEAD_LETTER. Error: {}",
                     job.getId(), maxAttempts, t.getMessage());
         } else {
             job.setStatus("FAILED");
+            meterRegistry.counter("jobs.retry").increment();
             log.info("Job {} failed (attempt {}/{}). Will retry. Error: {}",
                     job.getId(), nextAttempts, maxAttempts, t.getMessage());
         }

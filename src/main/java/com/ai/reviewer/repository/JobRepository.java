@@ -23,5 +23,8 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @Transactional
     @Query("UPDATE Job j SET j.status = :status, j.updatedAt = :now WHERE j.id = :id AND j.status IN ('PENDING', 'FAILED')")
     int acquireJob(@Param("id") Long id, @Param("status") String status, @Param("now") LocalDateTime now);
+
+    @Query("SELECT j FROM Job j WHERE j.status = 'IN_PROGRESS' AND j.updatedAt < :threshold")
+    List<Job> findStuckJobs(@Param("threshold") LocalDateTime threshold);
 }
 
