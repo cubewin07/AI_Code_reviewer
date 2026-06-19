@@ -154,6 +154,102 @@ public class GitHubClient {
         }
     }
 
+    public List<GitHubComment> getPullRequestComments(String owner, String repo, int prNumber, long installationId) {
+        try {
+            log.info("Fetching comments for PR: {}/{}, number: {}", owner, repo, prNumber);
+            String token = authService.getInstallationToken(installationId);
+            GitHubComment[] response = restClient.get()
+                    .uri("/repos/{owner}/{repo}/issues/{number}/comments", owner, repo, prNumber)
+                    .header("Authorization", "token " + token)
+                    .retrieve()
+                    .body(GitHubComment[].class);
+            return response != null ? Arrays.asList(response) : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Failed to fetch PR comments for repo {}/{} PR {}", owner, repo, prNumber, e);
+            throw new RuntimeException("Failed to fetch PR comments", e);
+        }
+    }
+
+    public List<GitHubComment> getCommitComments(String owner, String repo, String sha, long installationId) {
+        try {
+            log.info("Fetching comments for commit: {}/{}, SHA: {}", owner, repo, sha);
+            String token = authService.getInstallationToken(installationId);
+            GitHubComment[] response = restClient.get()
+                    .uri("/repos/{owner}/{repo}/commits/{sha}/comments", owner, repo, sha)
+                    .header("Authorization", "token " + token)
+                    .retrieve()
+                    .body(GitHubComment[].class);
+            return response != null ? Arrays.asList(response) : Collections.emptyList();
+        } catch (Exception e) {
+            log.error("Failed to fetch commit comments for repo {}/{} SHA {}", owner, repo, sha, e);
+            throw new RuntimeException("Failed to fetch commit comments", e);
+        }
+    }
+
+    public GitHubComment postPullRequestComment(String owner, String repo, int prNumber, String body, long installationId) {
+        try {
+            log.info("Posting comment to PR: {}/{}, number: {}", owner, repo, prNumber);
+            String token = authService.getInstallationToken(installationId);
+            return restClient.post()
+                    .uri("/repos/{owner}/{repo}/issues/{number}/comments", owner, repo, prNumber)
+                    .header("Authorization", "token " + token)
+                    .body(java.util.Map.of("body", body))
+                    .retrieve()
+                    .body(GitHubComment.class);
+        } catch (Exception e) {
+            log.error("Failed to post comment to PR {}/{} PR {}", owner, repo, prNumber, e);
+            throw new RuntimeException("Failed to post PR comment", e);
+        }
+    }
+
+    public GitHubComment postCommitComment(String owner, String repo, String sha, String body, long installationId) {
+        try {
+            log.info("Posting comment to commit: {}/{}, SHA: {}", owner, repo, sha);
+            String token = authService.getInstallationToken(installationId);
+            return restClient.post()
+                    .uri("/repos/{owner}/{repo}/commits/{sha}/comments", owner, repo, sha)
+                    .header("Authorization", "token " + token)
+                    .body(java.util.Map.of("body", body))
+                    .retrieve()
+                    .body(GitHubComment.class);
+        } catch (Exception e) {
+            log.error("Failed to post comment to commit {}/{} SHA {}", owner, repo, sha, e);
+            throw new RuntimeException("Failed to post commit comment", e);
+        }
+    }
+
+    public GitHubComment updatePullRequestComment(String owner, String repo, long commentId, String body, long installationId) {
+        try {
+            log.info("Updating PR comment ID: {} in repo {}/{}", commentId, owner, repo);
+            String token = authService.getInstallationToken(installationId);
+            return restClient.patch()
+                    .uri("/repos/{owner}/{repo}/issues/comments/{commentId}", owner, repo, commentId)
+                    .header("Authorization", "token " + token)
+                    .body(java.util.Map.of("body", body))
+                    .retrieve()
+                    .body(GitHubComment.class);
+        } catch (Exception e) {
+            log.error("Failed to update PR comment {} in repo {}/{}", commentId, owner, repo, e);
+            throw new RuntimeException("Failed to update PR comment", e);
+        }
+    }
+
+    public GitHubComment updateCommitComment(String owner, String repo, long commentId, String body, long installationId) {
+        try {
+            log.info("Updating commit comment ID: {} in repo {}/{}", commentId, owner, repo);
+            String token = authService.getInstallationToken(installationId);
+            return restClient.patch()
+                    .uri("/repos/{owner}/{repo}/comments/{commentId}", owner, repo, commentId)
+                    .header("Authorization", "token " + token)
+                    .body(java.util.Map.of("body", body))
+                    .retrieve()
+                    .body(GitHubComment.class);
+        } catch (Exception e) {
+            log.error("Failed to update commit comment {} in repo {}/{}", commentId, owner, repo, e);
+            throw new RuntimeException("Failed to update commit comment", e);
+        }
+    }
+
     private String decodeAndTruncate(String base64Content) {
         if (base64Content == null) {
             return "";
