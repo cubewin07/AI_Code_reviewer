@@ -2,6 +2,20 @@ spring:
   datasource:
     url: jdbc:sqlite:data/reviewer-test.db
 
+management:
+  defaults:
+    metrics:
+      export:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
 app:
   github:
     app-id: 123456

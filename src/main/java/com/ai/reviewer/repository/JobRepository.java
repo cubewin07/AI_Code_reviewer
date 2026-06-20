@@ -26,5 +26,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
 
     @Query("SELECT j FROM Job j WHERE j.status = 'IN_PROGRESS' AND j.updatedAt < :threshold")
     List<Job> findStuckJobs(@Param("threshold") LocalDateTime threshold);
+
+    long countByStatus(String status);
 }
 

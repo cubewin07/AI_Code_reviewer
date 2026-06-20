@@ -21,7 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "app.worker.poll-delay-ms=60000"
+})
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 class WebhookControllerTest {
