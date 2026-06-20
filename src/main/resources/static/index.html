@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Code Reviewer Control Center - Monitor and manage your self-hosted GitHub AI agent reviewer.">
+    <title>AI Code Reviewer - Control Center</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="/" class="logo">
+                <div class="logo-icon">AI</div>
+                <span class="logo-text">AI Code Reviewer</span>
+            </a>
+            <div class="system-status">
+                <span id="header-status-dot" class="status-dot"></span>
+                <span id="header-status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>AI Code Reviewer Control Center</h1>
+                <p>
+                    Your self-hosted GitHub App backend is active and listening for webhook payloads.
+                    Our ReAct agent retrieves the full code context from GitHub and posts precise review comments on every push and pull request.
+                </p>
+                <div class="card">
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="color: var(--accent-secondary);">📡</span> Active Webhook Target
+                    </h3>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Configure this exact URL as the "Webhook URL" in your GitHub App general configuration:
+                    </p>
+                    <div class="endpoint-panel">
+                        <span class="endpoint-badge">POST</span>
+                        <span id="webhook-url" class="endpoint-url">Detecting origin...</span>
+                        <button id="copy-btn" class="copy-btn">
+                            <span id="copy-icon">📋</span> <span id="copy-text">Copy</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-graphic">
+                <div class="glow-circle"></div>
+                <!-- Animated SVG Graphic -->
+                <svg class="graphic-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Circle Orbit -->
+                    <circle cx="100" cy="100" r="80" stroke="url(#paint0_linear)" stroke-width="1.5" stroke-dasharray="8 6"/>
+                    <circle cx="100" cy="100" r="60" stroke="url(#paint1_linear)" stroke-width="1" opacity="0.6"/>
+                    
+                    <!-- Pulsing center node -->
+                    <circle cx="100" cy="100" r="16" fill="url(#paint2_linear)" filter="drop-shadow(0 0 10px rgba(139,92,246,0.6))"/>
+                    
+                    <!-- Floating Satellite Nodes -->
+                    <g transform="translate(100, 100)">
+                        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="15s" repeatCount="indefinite" />
+                        <circle cx="80" cy="0" r="6" fill="var(--accent-secondary)"/>
+                        <line x1="0" y1="0" x2="80" y2="0" stroke="var(--accent-secondary)" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
+                    </g>
+                    
+                    <g transform="translate(100, 100)">
+                        <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="25s" repeatCount="indefinite" />
+                        <circle cx="-60" cy="0" r="4" fill="var(--accent-primary)"/>
+                        <line x1="0" y1="0" x2="-60" y2="0" stroke="var(--accent-primary)" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.4"/>
+                    </g>
+
+                    <defs>
+                        <linearGradient id="paint0_linear" x1="20" y1="20" x2="180" y2="180" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="var(--accent-primary)"/>
+                            <stop offset="1" stop-color="var(--accent-secondary)"/>
+                        </linearGradient>
+                        <linearGradient id="paint1_linear" x1="40" y1="40" x2="160" y2="160" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="var(--accent-secondary)"/>
+                            <stop offset="1" stop-color="var(--accent-primary)"/>
+                        </linearGradient>
+                        <linearGradient id="paint2_linear" x1="84" y1="84" x2="116" y2="116" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="var(--accent-primary)"/>
+                            <stop offset="1" stop-color="var(--accent-secondary)"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </section>
+
+        <!-- Diagnostics Panel -->
+        <section class="diagnostics-panel">
+            <h2 class="section-title">📊 Live Server Diagnostics</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                Real-time operational health checks retrieved from standard service actuator endpoints.
+            </p>
+            <div class="diag-grid">
+                <div class="diag-item">
+                    <div class="diag-label">Core Status</div>
+                    <div id="diag-core" class="diag-value status-err">OFFLINE</div>
+                </div>
+                <div class="diag-item">
+                    <div class="diag-label">Database connection</div>
+                    <div id="diag-db" class="diag-value status-err">N/A</div>
+                </div>
+                <div class="diag-item">
+                    <div class="diag-label">Disk Storage</div>
+                    <div id="diag-disk" class="diag-value status-err">N/A</div>
+                </div>
+                <div class="diag-item">
+                    <div class="diag-label">App Environment</div>
+                    <div id="diag-env" class="diag-value" style="color: var(--text-secondary);">UNKNOWN</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Setup Instructions -->
+        <section class="setup-container">
+            <h2 class="section-title">🚀 Getting Started Checklist</h2>
+            <div class="steps-grid">
+                <!-- Step 1 -->
+                <div class="card step-card">
+                    <div class="step-number">1</div>
+                    <h3>GitHub App Setup</h3>
+                    <p>Register a new GitHub App in your Settings page:</p>
+                    <ul>
+                        <li>Set <strong>Homepage URL</strong> to this domain.</li>
+                        <li>Activate <strong>Webhooks</strong> & paste the webhook target above.</li>
+                        <li>Generate a <strong>Private Key</strong> and download the <code>.pem</code> file.</li>
+                    </ul>
+                </div>
+                <!-- Step 2 -->
+                <div class="card step-card">
+                    <div class="step-number">2</div>
+                    <h3>Configure Credentials</h3>
+                    <p>Place app credentials into your server environment variables:</p>
+                    <ul>
+                        <li>Set <code>GITHUB_APP_ID</code> and <code>GITHUB_WEBHOOK_SECRET</code>.</li>
+                        <li>Configure <code>GITHUB_PRIVATE_KEY_PATH</code> pointing to the <code>.pem</code> file.</li>
+                        <li>Enter your <code>NINE_ROUTER_API_KEY</code> and LLM model choices.</li>
+                    </ul>
+                </div>
+                <!-- Step 3 -->
+                <div class="card step-card">
+                    <div class="step-number">3</div>
+                    <h3>Install and Run</h3>
+                    <p>Deploy the application and activate reviews:</p>
+                    <ul>
+                        <li>Install the App on target repositories.</li>
+                        <li>Ensure the JVM process runs via systemd or Docker.</li>
+                        <li>Trigger auto-reviews by pushing a commit or creating a PR!</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Developer & Actuator Resources -->
+        <section class="setup-container">
+            <h2 class="section-title">🛠️ Developer Console</h2>
+            <div class="dev-console">
+                <!-- Swagger -->
+                <div class="card console-card">
+                    <div>
+                        <div class="console-header">
+                            <span class="console-icon">📖</span>
+                            <h3>API Documentation</h3>
+                        </div>
+                        <p>Interact with endpoints, inspect schemas, and view request/response templates using Swagger UI.</p>
+                    </div>
+                    <a href="/swagger-ui/index.html" class="btn btn-primary">Open Swagger Console</a>
+                </div>
+
+                <!-- Actuator Health -->
+                <div class="card console-card">
+                    <div>
+                        <div class="console-header">
+                            <span class="console-icon">❤️</span>
+                            <h3>Actuator Diagnostics</h3>
+                        </div>
+                        <p>Inspect raw diagnostic details, component metrics, and dependencies directly from the health checker.</p>
+                    </div>
+                    <a href="/actuator/health" target="_blank" class="btn btn-secondary">Raw JSON Health</a>
+                </div>
+
+                <!-- Prometheus Metrics -->
+                <div class="card console-card">
+                    <div>
+                        <div class="console-header">
+                            <span class="console-icon">📈</span>
+                            <h3>Prometheus Metrics</h3>
+                        </div>
+                        <p>Access raw time-series metrics generated by Micrometer for scraper systems like Prometheus/Grafana.</p>
+                    </div>
+                    <a href="/actuator/prometheus" target="_blank" class="btn btn-secondary">Scraper Endpoint</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 AI Code Reviewer. Powered by Spring Boot, 9Router, and SQLite.</p>
+            <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+                Need help? View the <a href="https://github.com/cubewin07/AI_Code_reviewer" target="_blank" style="text-decoration: underline;">Project Repository docs</a>.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Set dynamic Webhook target URL
+        const origin = window.location.origin;
+        const webhookUrl = `${origin}/webhook`;
+        document.getElementById('webhook-url').textContent = webhookUrl;
+
+        // Clipboard copying logic
+        const copyBtn = document.getElementById('copy-btn');
+        const copyIcon = document.getElementById('copy-icon');
+        const copyText = document.getElementById('copy-text');
+
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(webhookUrl);
+                copyIcon.textContent = '✅';
+                copyText.textContent = 'Copied!';
+                copyBtn.style.borderColor = 'var(--success)';
+                copyBtn.style.color = 'var(--success)';
+                
+                setTimeout(() => {
+                    copyIcon.textContent = '📋';
+                    copyText.textContent = 'Copy';
+                    copyBtn.style.borderColor = '';
+                    copyBtn.style.color = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy webhook endpoint: ', err);
+            }
+        });
+
+        // Health diagnostics dynamic fetching
+        async function fetchSystemHealth() {
+            const hStatusDot = document.getElementById('header-status-dot');
+            const hStatusText = document.getElementById('header-status-text');
+            const dCore = document.getElementById('diag-core');
+            const dDb = document.getElementById('diag-db');
+            const dDisk = document.getElementById('diag-disk');
+            const dEnv = document.getElementById('diag-env');
+
+            try {
+                const response = await fetch('/actuator/health');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                // 1. Core Status
+                const status = data.status || 'UNKNOWN';
+                hStatusText.textContent = `Online (${status})`;
+                hStatusDot.className = 'status-dot up';
+                
+                dCore.textContent = status;
+                dCore.className = 'diag-value status-ok';
+
+                // 2. Database Status
+                const dbStatus = data.components?.db?.status || 'UNKNOWN';
+                dDb.textContent = dbStatus;
+                if (dbStatus === 'UP') {
+                    dDb.className = 'diag-value status-ok';
+                } else {
+                    dDb.className = 'diag-value status-err';
+                }
+
+                // 3. Disk Space Status
+                const diskStatus = data.components?.diskSpace?.status || 'UNKNOWN';
+                dDisk.textContent = diskStatus;
+                if (diskStatus === 'UP') {
+                    dDisk.className = 'diag-value status-ok';
+                } else {
+                    dDisk.className = 'diag-value status-err';
+                }
+
+                // 4. Environment
+                // Set environment based on current document URL or generic active profile
+                dEnv.textContent = origin.includes('localhost') || origin.includes('127.0.0.1') ? 'LOCAL (DEV)' : 'PRODUCTION';
+
+            } catch (error) {
+                console.warn('Actuator health diagnostics endpoint unreachable:', error);
+                
+                hStatusText.textContent = 'Offline';
+                hStatusDot.className = 'status-dot down';
+                
+                dCore.textContent = 'OFFLINE';
+                dCore.className = 'diag-value status-err';
+                
+                dDb.textContent = 'N/A';
+                dDb.className = 'diag-value status-err';
+                
+                dDisk.textContent = 'N/A';
+                dDisk.className = 'diag-value status-err';
+                
+                dEnv.textContent = 'UNKNOWN';
+            }
+        }
+
+        // Fetch immediately and poll every 5 seconds
+        fetchSystemHealth();
+        setInterval(fetchSystemHealth, 5000);
+    </script>
+</body>
+</html>

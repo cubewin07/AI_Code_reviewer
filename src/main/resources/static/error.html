@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Code Reviewer Error - The requested page or endpoint could not be found.">
+    <title>AI Code Reviewer - Page Not Found</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <a href="/" class="logo">
+                <div class="logo-icon">AI</div>
+                <span class="logo-text">AI Code Reviewer</span>
+            </a>
+            <div class="system-status">
+                <span id="header-status-dot" class="status-dot"></span>
+                <span id="header-status-text">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- Main Error Container -->
+        <main class="error-container">
+            <div class="error-code" id="error-code-val">404</div>
+            <h1 class="error-title">Page Not Found</h1>
+            
+            <p class="error-desc">
+                The requested URL path <strong id="invalid-path" style="font-family: var(--font-mono); color: var(--accent-secondary); background: rgba(255, 255, 255, 0.05); padding: 0.2rem 0.5rem; border-radius: 6px;">/error</strong> is not a valid endpoint.
+            </p>
+
+            <!-- Guide Card -->
+            <div class="card error-card">
+                <h4 style="color: var(--accent-primary);">⚠️ What happened?</h4>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    You are seeing this page because this application does not have an active browser interface at the entered address. 
+                    This server operates as a self-hosted GitHub App backend.
+                </p>
+
+                <h4 style="color: var(--accent-secondary);">🔍 Troubleshooting & Action Steps</h4>
+                <ul style="list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-secondary);">
+                    <li style="position: relative; padding-left: 1.5rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-primary);">•</span>
+                        <strong>Looking for the control center?</strong> Visit the main dashboard to check status, verify server diagnostics, or access API swagger tools.
+                    </li>
+                    <li style="position: relative; padding-left: 1.5rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-primary);">•</span>
+                        <strong>Setting up GitHub Webhooks?</strong> The app accepts payload streams via POST requests. Make sure you've appended <code style="font-family: var(--font-mono); color: var(--text-primary);">/webhook</code> to your URL in the GitHub Settings panel.
+                    </li>
+                    <li style="position: relative; padding-left: 1.5rem;">
+                        <span style="position: absolute; left: 0; color: var(--accent-primary);">•</span>
+                        <strong>Typo in target URL?</strong> Double check your address spelling and port parameters.
+                    </li>
+                </ul>
+            </div>
+
+            <!-- CTA Back Home Button -->
+            <a href="/" class="btn btn-primary back-home-btn">
+                <span>🏠</span> Return to Dashboard Control Center
+            </a>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 AI Code Reviewer. Powered by Spring Boot, 9Router, and SQLite.</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Set dynamic invalid path name
+        const currentPath = window.location.pathname;
+        if (currentPath && currentPath !== '/' && currentPath !== '/error') {
+            document.getElementById('invalid-path').textContent = currentPath;
+        }
+
+        // Health diagnostics dynamic fetching
+        async function fetchSystemHealth() {
+            const hStatusDot = document.getElementById('header-status-dot');
+            const hStatusText = document.getElementById('header-status-text');
+
+            try {
+                const response = await fetch('/actuator/health');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const status = data.status || 'UP';
+                hStatusText.textContent = `Online (${status})`;
+                hStatusDot.className = 'status-dot up';
+            } catch (error) {
+                hStatusText.textContent = 'Offline';
+                hStatusDot.className = 'status-dot down';
+            }
+        }
+
+        // Fetch immediately and poll every 5 seconds
+        fetchSystemHealth();
+        setInterval(fetchSystemHealth, 5000);
+    </script>
+</body>
+</html>
