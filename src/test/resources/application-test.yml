@@ -18,15 +18,15 @@ management:
 
 app:
   github:
-    app-id: 123456
-    private-key-path: mock-key.pem
-    webhook-secret: test-webhook-secret
-    api-url: http://localhost:8089
+    app-id: 3936175
+    private-key-path: /Users/letanthang/learning_software/keys/code_reviewer.pem
+    webhook-secret: e5879e322f3aed3f25ae3af4254e1498b6aef3dc4129c7ba378eb5e81c048e32
+    api-url: http://localhost:8080
   nine-router:
-    base-url: https://api.9router.com
-    api-key: mock-api-key
-    model: meta-llama/llama-3-70b-instruct
-    fallback-model: meta-llama/llama-3-8b-instruct
+    base-url: http://localhost:20128
+    api-key: sk-523dfcf621e63941-h828r7-6a3be2df
+    model: nvidia/openai/gpt-oss-120b
+    fallback-model: nvidia/google/gemma-4-31b-it
     max-tokens: 4096
     timeout-seconds: 60
   worker:
